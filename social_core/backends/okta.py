@@ -6,7 +6,9 @@ from urllib.parse import urljoin
 
 from ..utils import append_slash
 from .oauth import BaseOAuth2
+import logging
 
+log = logging.getLogger(__name__)
 
 class OktaMixin:
     def api_url(self):
@@ -49,9 +51,13 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     ]
 
     def get_user_details(self, response):
+
         """Return user details from Okta account"""
-        return {'username': response.get('preferred_username'),
-                'email': response.get('email') or '',
+        #Force username/email as lowercase regardless of what okta is.  Set Django email to okta preferred_username otherwise it tries to use okta email instead of username EAB 11/10/2021
+        return {#'username': response.get('preferred_username'),
+                'username': response.get('preferred_username').lower(),
+                #'email': response.get('email') or '',
+                'email': response.get('preferred_username').lower() or '',
                 'first_name': response.get('given_name'),
                 'last_name': response.get('family_name')}
 
